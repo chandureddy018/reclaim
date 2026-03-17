@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Re-Claim — Digital Lost & Found</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f1f5f9;color:#0f172a}
+.page{display:none;min-height:100vh}.page.active{display:block}
+
+/* AUTH */
+.auth-wrap{display:flex;min-height:100vh}
+.auth-left{flex:1;background:#1e3a8a;padding:48px 40px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
+.auth-left::after{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,0.05);bottom:-80px;right:-80px}
+.auth-brand{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#93c5fd;margin-bottom:20px}
+.auth-title{font-size:52px;font-weight:700;color:#fff;line-height:1.1;margin-bottom:16px}
+.auth-title span{color:#67e8f9}
+.auth-desc{color:rgba(255,255,255,0.65);font-size:15px;line-height:1.7}
+.auth-right{width:420px;background:#fff;padding:52px 40px;display:flex;flex-direction:column;justify-content:center}
+.auth-right h2{font-size:26px;font-weight:700;margin-bottom:6px}
+.auth-sub{color:#64748b;font-size:14px;margin-bottom:28px}
+.auth-tabs{display:flex;background:#f1f5f9;padding:4px;border-radius:10px;margin-bottom:24px}
+.auth-tab{flex:1;padding:9px;border:none;background:none;cursor:pointer;border-radius:7px;font-size:14px;color:#64748b;font-family:inherit}
+.auth-tab.on{background:#fff;color:#0f172a;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.1)}
+.field{margin-bottom:14px}
+.field input{width:100%;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;background:#f8fafc;color:#0f172a;font-family:inherit;outline:none;transition:.15s}
+.field input:focus{border-color:#3b82f6;background:#fff;box-shadow:0 0 0 3px rgba(59,130,246,0.1)}
+.btn-blue{width:100%;padding:13px;background:#2563eb;border:none;border-radius:9px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s;margin-top:4px}
+.btn-blue:hover{background:#1d4ed8}.btn-blue:disabled{opacity:.6;cursor:not-allowed}
+.err{color:#ef4444;font-size:13px;margin-top:8px;min-height:20px}
+.suc{color:#16a34a;font-size:13px;margin-top:8px;min-height:20px}
+
+/* NAV */
+.nav{height:62px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 24px;gap:14px;position:sticky;top:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
+.nav-logo{font-size:21px;font-weight:800;color:#0f172a}.nav-logo span{color:#0891b2}
+.nav-sp{flex:1}
+.nav-user{font-size:13px;color:#64748b;display:flex;align-items:center;gap:8px}
+.av{width:34px;height:34px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff}
+.av.adm{background:#7c3aed}
+.admin-badge{font-size:11px;background:#f5f3ff;color:#6d28d9;padding:2px 10px;border-radius:20px;border:1px solid #ddd6fe;font-weight:600}
+.btn-out{padding:7px 16px;background:none;border:1.5px solid #e2e8f0;border-radius:8px;color:#64748b;font-size:13px;cursor:pointer;font-family:inherit;transition:.15s}
+.btn-out:hover{border-color:#ef4444;color:#ef4444}
+.btn-admin-nav{padding:7px 16px;background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:8px;color:#6d28d9;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600}
+.btn-admin-nav:hover{background:#ede9fe}
+
+/* CONTENT */
+.content{padding:30px 24px;max-width:1100px;margin:0 auto}
+.view{display:none}.view.on{display:block}
+.vhdr{display:flex;align-items:center;gap:12px;margin-bottom:26px}
+.bbk{width:36px;height:36px;border-radius:50%;background:#f1f5f9;border:1.5px solid #e2e8f0;color:#334155;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:.15s}
+.bbk:hover{border-color:#3b82f6;color:#3b82f6}
+.vhdr h2{font-size:22px;font-weight:700}
+
+/* HOME */
+.home-hi{margin-bottom:26px}
+.home-hi h2{font-size:28px;font-weight:700;margin-bottom:5px}
+.home-hi p{color:#64748b;font-size:15px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:26px}
+.stat{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.stat-ico{font-size:28px}
+.stat h4{font-size:26px;font-weight:700}.stat p{font-size:12px;color:#64748b}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.ac{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:26px 16px;text-align:center;cursor:pointer;transition:all .15s;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.ac:hover{border-color:#93c5fd;transform:translateY(-3px);box-shadow:0 6px 16px rgba(59,130,246,0.1)}
+.ac-ico{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 12px}
+.ac h3{font-size:13px;font-weight:600;color:#334155}
+.ico-lost{background:#fff7ed}.ico-found{background:#f0fdf4}.ico-srch{background:#eff6ff}
+.ico-bell{background:#faf5ff}.ico-post{background:#ecfeff}.ico-chat{background:#fff7ed}.ico-admin{background:#f5f3ff}
+
+/* FORM */
+.fcard{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:32px;max-width:580px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.frow{margin-bottom:18px}
+.frow label{display:block;font-size:12px;color:#64748b;margin-bottom:7px;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.frow input,.frow select,.frow textarea{width:100%;padding:12px 14px;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;color:#0f172a;font-size:14px;font-family:inherit;outline:none;transition:.15s}
+.frow input:focus,.frow select:focus,.frow textarea:focus{border-color:#3b82f6;background:#fff;box-shadow:0 0 0 3px rgba(59,130,246,0.08)}
+.frow textarea{min-height:90px;resize:vertical}
+.file-upload{padding:10px 14px;background:#f8fafc;border:1.5px dashed #cbd5e1;border-radius:8px;cursor:pointer;font-size:13px;color:#64748b;text-align:center}
+.file-upload:hover{border-color:#3b82f6;color:#3b82f6}
+.btn-sub{padding:12px 32px;background:#2563eb;border:none;border-radius:9px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}
+.btn-sub:hover{background:#1d4ed8}.btn-sub:disabled{opacity:.6;cursor:not-allowed}
+.match-alert{background:#fefce8;border:1.5px solid #fde047;border-radius:10px;padding:14px 16px;margin-top:14px;font-size:13px;color:#854d0e;display:none}
+.match-alert strong{display:block;margin-bottom:4px;font-size:14px}
+
+/* ITEMS */
+.sbar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.sbar input{flex:1;min-width:200px;padding:12px 16px;background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;color:#0f172a;font-size:14px;font-family:inherit;outline:none}
+.sbar input:focus{border-color:#3b82f6}
+.sbar select{padding:12px 14px;background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;color:#0f172a;font-size:14px;font-family:inherit;outline:none}
+.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
+.icard{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:20px;transition:all .15s;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.icard:hover{border-color:#93c5fd;box-shadow:0 4px 14px rgba(59,130,246,0.08);transform:translateY(-2px)}
+.icard img{width:100%;height:160px;object-fit:cover;border-radius:8px;margin-bottom:12px}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px}
+.bl{background:#fff7ed;color:#9a3412}.bf{background:#f0fdf4;color:#166534}.br{background:#eff6ff;color:#1e40af}
+.icard h3{font-size:15px;font-weight:600;margin-bottom:8px}
+.imeta{font-size:13px;color:#64748b;margin-bottom:3px}
+.idesc{font-size:13px;color:#64748b;margin-top:8px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ifooter{margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between}
+.iposter{font-size:12px;color:#94a3b8}
+.btn-ct{padding:5px 12px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:7px;color:#2563eb;font-size:12px;cursor:pointer;font-family:inherit;transition:.15s}
+.btn-ct:hover{background:#2563eb;color:#fff}
+.empty{text-align:center;padding:60px 20px;color:#94a3b8}
+.empty-i{font-size:44px;margin-bottom:10px}
+.loading{text-align:center;padding:40px;color:#94a3b8;font-size:14px}
+
+/* MY POSTS */
+.mpc{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:20px;display:flex;gap:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.mpi{flex:1}.mpi h3{font-size:15px;font-weight:600;margin-bottom:6px}
+.mpa{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.btn-del{padding:5px 14px;background:#fef2f2;border:1px solid #fca5a5;border-radius:7px;color:#dc2626;font-size:12px;cursor:pointer;font-family:inherit}
+.btn-del:hover{background:#dc2626;color:#fff}
+.btn-res{padding:5px 14px;background:#f0fdf4;border:1px solid #86efac;border-radius:7px;color:#16a34a;font-size:12px;cursor:pointer;font-family:inherit}
+.btn-res:hover{background:#16a34a;color:#fff}
+
+/* NOTIFICATIONS */
+.ncard{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 18px;display:flex;gap:12px;margin-bottom:10px}
+.ndot{width:9px;height:9px;border-radius:50%;background:#3b82f6;margin-top:5px;flex-shrink:0}
+.ncard h4{font-size:14px;font-weight:600;margin-bottom:4px}.ncard p{font-size:13px;color:#64748b}
+.ntime{font-size:11px;color:#94a3b8;margin-top:4px}
+
+/* CHAT */
+.cwrap{display:flex;flex-direction:column;height:500px;max-height:70vh}
+.cmsgs{flex:1;overflow-y:auto;padding:16px;background:#fff;border:1px solid #e2e8f0;border-radius:14px 14px 0 0;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:72%}.msg.mine{align-self:flex-end}.msg.them{align-self:flex-start}
+.mb{padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.5}
+.mine .mb{background:#2563eb;color:#fff;border-radius:12px 12px 2px 12px}
+.them .mb{background:#f1f5f9;color:#0f172a;border-radius:12px 12px 12px 2px}
+.mm{font-size:11px;color:#94a3b8;margin-top:3px;text-align:right}.them .mm{text-align:left}
+.cinput{display:flex;gap:10px;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 14px 14px}
+.cinput input{flex:1;padding:10px 14px;background:#fff;border:1.5px solid #e2e8f0;border-radius:8px;color:#0f172a;font-size:14px;font-family:inherit;outline:none}
+.cinput input:focus{border-color:#3b82f6}
+.bsend{padding:10px 22px;background:#2563eb;border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.bsend:hover{background:#1d4ed8}
+
+/* ADMIN */
+.admin-hdr{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:14px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px}
+.admin-hdr-ico{width:48px;height:48px;border-radius:12px;background:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;flex-shrink:0}
+.admin-hdr h3{font-size:17px;font-weight:700;color:#4c1d95;margin-bottom:3px}
+.admin-hdr p{font-size:13px;color:#6d28d9}
+.atabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.atab{padding:9px 20px;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;color:#64748b;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;transition:.15s}
+.atab.on{background:#7c3aed;border-color:#7c3aed;color:#fff;font-weight:600}
+.apanel{display:none}.apanel.on{display:block}
+.atable-wrap{overflow-x:auto;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.atable{width:100%;border-collapse:collapse;font-size:13px}
+.atable thead{background:#f8fafc}
+.atable th{padding:11px 14px;text-align:left;font-weight:600;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+.atable td{padding:13px 14px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.atable tr:last-child td{border-bottom:none}
+.atable tr:hover td{background:#fafbfc}
+.user-row{display:flex;align-items:center;gap:8px}
+.user-av{width:30px;height:30px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.td-name{font-weight:600}.td-meta{font-size:12px;color:#64748b;margin-top:2px}
+.btn-adel{padding:4px 10px;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;color:#dc2626;font-size:11px;cursor:pointer;font-family:inherit}
+.btn-adel:hover{background:#dc2626;color:#fff}
+.btn-ares{padding:4px 10px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;color:#16a34a;font-size:11px;cursor:pointer;font-family:inherit;margin-right:4px}
+.btn-ares:hover{background:#16a34a;color:#fff}
+.btn-adet{padding:4px 10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;color:#1d4ed8;font-size:11px;cursor:pointer;font-family:inherit;margin-right:4px}
+.btn-adet:hover{background:#1d4ed8;color:#fff}
+.filter-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.filter-row input,.filter-row select{padding:9px 12px;background:#fff;border:1.5px solid #e2e8f0;border-radius:8px;color:#0f172a;font-size:13px;font-family:inherit;outline:none}
+.filter-row input{flex:1;min-width:180px}
+.stat-admin{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.sa{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;text-align:center}
+.sa h4{font-size:24px;font-weight:700;margin-bottom:2px}.sa p{font-size:11px;color:#64748b}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.on{display:flex}
+.modal{background:#fff;border-radius:16px;padding:30px;width:500px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.modal h3{font-size:20px;font-weight:700;margin-bottom:4px}.modal .msub{font-size:13px;color:#64748b;margin-bottom:20px}
+.modal-close{position:absolute;top:16px;right:16px;width:30px;height:30px;border-radius:50%;background:#f1f5f9;border:1px solid #e2e8f0;cursor:pointer;font-size:16px;color:#64748b;font-family:inherit}
+.modal-close:hover{background:#fee2e2;color:#dc2626}
+.detail-row{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid #f1f5f9}
+.detail-row:last-child{border-bottom:none}
+.dl{font-size:12px;color:#64748b;min-width:110px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;padding-top:2px}
+.dv{font-size:14px;flex:1;word-break:break-word;line-height:1.5}
+.contact-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px;margin-top:18px}
+.contact-box h4{font-size:12px;color:#1e40af;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.cdet{display:flex;align-items:center;gap:8px;font-size:14px;color:#1e40af;margin-bottom:7px}
+
+/* CREDENTIALS */
+.cred-section{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:28px;max-width:480px;margin-bottom:20px}
+.cred-section h3{font-size:16px;font-weight:700;margin-bottom:4px}
+.cred-section p{font-size:13px;color:#64748b;margin-bottom:18px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;padding:13px 20px;border-radius:10px;font-size:14px;font-weight:500;border:1px solid;animation:tin .25s ease;max-width:320px;box-shadow:0 4px 14px rgba(0,0,0,0.1)}
+.ts{background:#f0fdf4;border-color:#86efac;color:#166534}
+.te{background:#fef2f2;border-color:#fca5a5;color:#dc2626}
+@keyframes tin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:768px){
+  .auth-wrap{flex-direction:column}.auth-left{padding:32px 24px}.auth-title{font-size:36px}.auth-right{width:100%;padding:32px 24px}
+  .grid4{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(3,1fr)}
+  .stat-admin{grid-template-columns:repeat(2,1fr)}.nav{padding:0 14px;gap:8px}.content{padding:20px 14px}
+}
+@media(max-width:480px){.grid4,.grid3{grid-template-columns:1fr 1fr}.stats{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&#10005;</button>
+    <h3 id="m-title"></h3><div class="msub" id="m-sub"></div>
+    <div id="m-body"></div>
+    <div class="contact-box" id="m-contact" style="display:none">
+      <h4>&#128100; Reporter Contact Info</h4>
+      <div id="m-cbody"></div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH PAGE -->
+<div id="pg-auth" class="page active">
+  <div class="auth-wrap">
+    <div class="auth-left">
+      <div class="auth-brand">Digital Lost &amp; Found</div>
+      <div class="auth-title">Re<span>-</span><br>Claim</div>
+      <div class="auth-desc">Report lost items, browse found ones, and help reunite belongings with their rightful owners — across colleges, public transport, and more.</div>
+    </div>
+    <div class="auth-right">
+      <h2>Welcome</h2>
+      <p class="auth-sub">Sign in or create your account</p>
+      <div class="auth-tabs">
+        <button class="auth-tab on" id="tab-si" onclick="aTab('si')">Sign In</button>
+        <button class="auth-tab" id="tab-su" onclick="aTab('su')">Sign Up</button>
+      </div>
+      <div id="f-si">
+        <div class="field"><input id="si-e" type="email" placeholder="Email address"/></div>
+        <div class="field"><input id="si-p" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')doSI()"/></div>
+        <button class="btn-blue" id="btn-si" onclick="doSI()">Sign In</button>
+        <div class="err" id="si-err"></div>
+      </div>
+      <div id="f-su" style="display:none">
+        <div class="field"><input id="su-n" type="text" placeholder="Full Name"/></div>
+        <div class="field"><input id="su-e" type="email" placeholder="Email address"/></div>
+        <div class="field"><input id="su-ph" type="tel" placeholder="Phone number (optional)"/></div>
+        <div class="field"><input id="su-p" type="password" placeholder="Password (min 6 chars)"/></div>
+        <button class="btn-blue" id="btn-su" onclick="doSU()">Create Account</button>
+        <div class="err" id="su-err"></div><div class="suc" id="su-suc"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP PAGE -->
+<div id="pg-app" class="page">
+  <nav class="nav">
+    <div class="nav-logo">Re<span>-</span>Claim</div>
+    <div class="nav-sp"></div>
+    <div class="nav-user">
+      <div class="av" id="nav-av">?</div>
+      <span id="nav-nm">User</span>
+      <span class="admin-badge" id="nav-abadge" style="display:none">Admin</span>
+    </div>
+    <button class="btn-admin-nav" id="nav-abtn" style="display:none" onclick="sv('admin')">&#9881; Admin</button>
+    <button class="btn-out" onclick="doOut()">Logout</button>
+  </nav>
+
+  <div class="content">
+
+    <!-- HOME -->
+    <div id="v-home" class="view on">
+      <div class="home-hi"><h2>Welcome, <span id="h-name">there</span> &#128075;</h2><p>What would you like to do today?</p></div>
+      <div class="stats">
+        <div class="stat"><div class="stat-ico">&#128308;</div><div><h4 id="s-l">—</h4><p>Lost reports</p></div></div>
+        <div class="stat"><div class="stat-ico">&#128994;</div><div><h4 id="s-f">—</h4><p>Found reports</p></div></div>
+        <div class="stat"><div class="stat-ico">&#9989;</div><div><h4 id="s-r">—</h4><p>Resolved</p></div></div>
+      </div>
+      <div class="grid4">
+        <div class="ac" onclick="sv('rl')"><div class="ac-ico ico-lost">&#9888;&#65039;</div><h3>Report Lost Item</h3></div>
+        <div class="ac" onclick="sv('rf')"><div class="ac-ico ico-found">&#128230;</div><h3>Report Found Item</h3></div>
+        <div class="ac" onclick="sv('sl')"><div class="ac-ico ico-srch">&#128269;</div><h3>Search Lost Items</h3></div>
+        <div class="ac" onclick="sv('sf')"><div class="ac-ico ico-srch">&#128270;</div><h3>Search Found Items</h3></div>
+      </div>
+      <div class="grid3" style="margin-top:14px">
+        <div class="ac" onclick="sv('notif')"><div class="ac-ico ico-bell">&#128276;</div><h3>Notifications</h3></div>
+        <div class="ac" onclick="sv('myposts')"><div class="ac-ico ico-post">&#128203;</div><h3>My Posts</h3></div>
+        <div class="ac" onclick="sv('chat')"><div class="ac-ico ico-chat">&#128172;</div><h3>Chat With Admin</h3></div>
+      </div>
+      <div id="home-admin-card" style="display:none;margin-top:14px">
+        <div class="ac" style="text-align:left;display:flex;align-items:center;gap:16px;padding:20px 24px" onclick="sv('admin')">
+          <div class="ac-ico ico-admin" style="margin:0;flex-shrink:0">&#9881;&#65039;</div>
+          <div><h3 style="font-size:15px;margin-bottom:4px">Admin Panel</h3><p style="font-size:12px;color:#64748b;font-weight:400">Manage all reports, view user details</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORT LOST -->
+    <div id="v-rl" class="view">
+      <div class="vhdr"><button class="bbk" onclick="sv('home')">&#8592;</button><h2>Report Lost Item</h2></div>
+      <div class="fcard">
+        <div class="frow"><label>Item Name *</label><input id="rl-n" type="text" placeholder="e.g. Black Wallet"/></div>
+        <div class="frow"><label>Category *</label><select id="rl-c"><option>Electronics</option><option>Bags &amp; Wallets</option><option>Documents &amp; Cards</option><option>Clothing</option><option>Keys</option><option>Jewellery</option><option>Books &amp; Stationery</option><option>Other</option></select></div>
+        <div class="frow"><label>Lost Location *</label><input id="rl-l" type="text" placeholder="e.g. Block A Library"/></div>
+        <div class="frow"><label>Date Lost</label><input id="rl-d" type="date"/></div>
+        <div class="frow"><label>Description</label><textarea id="rl-ds" placeholder="Color, brand, identifying features..."></textarea></div>
+        <div class="frow"><label>Your Contact Number</label><input id="rl-ct" type="tel" placeholder="Phone number"/></div>
+        <div class="frow"><label>Photo (optional)</label><input id="rl-img" type="file" accept="image/*" class="file-upload"/></div>
+        <button class="btn-sub" id="btn-rl" onclick="submitItem('lost')">Submit Report</button>
+        <div class="err" id="rl-err"></div><div class="suc" id="rl-suc"></div>
+        <div class="match-alert" id="rl-match"><strong>&#127881; Possible match found!</strong>A potential match was found. Check your email for details and browse Found Items to connect with the finder.</div>
+      </div>
+    </div>
+
+    <!-- REPORT FOUND -->
+    <div id="v-rf" class="view">
+      <div class="vhdr"><button class="bbk" onclick="sv('home')">&#8592;</button><h2>Report Found Item</h2></div>
+      <div class="fcard">
+        <div class="frow"><label>Item Name *</label><input id="rf-n" type="text" placeholder="e.g. iPhone 14"/></div>
+        <div class="frow"><label>Category *</label><select id="rf-c"><option>Electronics</option><option>Bags &amp; Wallets</option><option>Documents &amp; Cards</option><option>Clothing</option><option>Keys</option><option>Jewellery</option><option>Books &amp; Stationery</option><option>Other</option></select></div>
+        <div class="frow"><label>Found Location *</label><input id="rf-l" type="text" placeholder="Where did you find it?"/></div>
+        <div class="frow"><label>Date Found</label><input id="rf-d" type="date"/></div>
+        <div class="frow"><label>Description</label><textarea id="rf-ds" placeholder="Color, brand, identifying details..."></textarea></div>
+        <div class="frow"><label>Your Contact Number</label><input id="rf-ct" type="tel" placeholder="Phone number"/></div>
+        <div class="frow"><label>Item Currently Stored At</label><input id="rf-st" type="text" placeholder="e.g. Main Office, Security Desk"/></div>
+        <div class="frow"><label>Photo (optional)</label><input id="rf-img" type="file" accept="image/*" class="file-upload"/></div>
+        <button class="btn-sub" id="btn-rf" onclick="submitItem('found')">Submit Report</button>
+        <div class="err" id="rf-err"></div><div class="suc" id="rf-suc"></div>
+        <div class="match-alert" id="rf-match"><strong>&#127881; Possible match found!</strong>A potential match was found. Check your email for details and browse Lost Items to connect with the owner.</div>
+      </div>
+    </div>
+
+    <!-- SEARCH LOST -->
+    <div id="v-sl" class="view">
+      <div class="vhdr"><button class="bbk" onclick="sv('home')">&#8592;</button><h2>Search Lost Items</h2></div>
+      <div class="sbar">
+        <input id="sl-q" type="text" placeholder="Search by name, location..." oninput="debSearch('lost')"/>
+        <select id="sl-cat" onchange="searchItems('lost')"><option value="">All Categories</option><option>Electronics</option><option>Bags &amp; Wallets</option><option>Documents &amp; Cards</option><option>Clothing</option><option>Keys</option><option>Jewellery</option><option>Books &amp; Stationery</option><option>Other</option></select>
+      </div>
+      <div id="lost-grid" class="igrid"></div>
+    </div>
+
+    <!-- SEARCH FOUND -->
+    <div id="v-sf" class="view">
+      <div class="vhdr"><button class="bbk" onclick="sv('home')">&#8592;</button><h2>Search Found Items</h2></div>
+      <div class="sbar">
+        <input id="sf-q" type="text" placeholder="Search by name, location..." oninput="debSearch('found')"/>
+        <select id="sf-cat" onchange="searchItems('found')"><option value="">All Categories</option><option>Electronics</option><option>Bags &amp; Wallets</option><option>Documents &amp; Cards</option><option>Clothing</option><option>Keys</option><option>Jewellery</option><option>Books &amp; Stationery</option><option>Other</option></select>
+      </div>
+      <div id="found-grid" class="igrid"></div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div id="v-notif" class="view">
+      <div class="vhdr"><button class="bbk" onclick="sv('home')">&#8592;</button><h2>Notifications</h2></div>
+      <div id="notif-list">
+        <div class="ncard"><div class="ndot"></div><div><h4>Welcome to Re-Claim! &#127881;</h4><p>You can now report lost or found items and help the community.</p><div class="ntime">Just now</div></div></div>
+      </div>
+    </div>
+
+    <!-- MY POSTS -->
+    <div id="v-myposts" class="view">
+      <div class="vhdr"><button class="bbk" onclick="sv('home')">&#8592;</button><h2>My Posts</h2></div>
+      <div id="mp-list"></div>
+    </div>
+
+    <!-- CHAT -->
+    <div id="v-chat" class="view">
+      <div class="vhdr"><button class="bbk" onclick="sv('home')">&#8592;</button><h2>Chat with Admin</h2></div>
+      <div class="cwrap">
+        <div class="cmsgs" id="cmsgs"></div>
+        <div class="cinput">
+          <input id="cin" type="text" placeholder="Type your message..." onkeydown="if(event.key==='Enter')sndMsg()"/>
+          <button class="bsend" onclick="sndMsg()">Send &#10148;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="v-admin" class="view">
+      <div class="vhdr"><button class="bbk" onclick="sv('home')">&#8592;</button><h2>&#9881; Admin Panel</h2></div>
+      <div class="admin-hdr">
+        <div class="admin-hdr-ico">&#128272;</div>
+        <div><h3>Administrator Dashboard</h3><p>Full access — reporter details, manage all reports and users</p></div>
+      </div>
+      <div class="stat-admin">
+        <div class="sa"><h4 id="a-sl">—</h4><p>Lost Reports</p></div>
+        <div class="sa"><h4 id="a-sf">—</h4><p>Found Reports</p></div>
+        <div class="sa"><h4 id="a-su">—</h4><p>Users</p></div>
+        <div class="sa"><h4 id="a-sr">—</h4><p>Resolved</p></div>
+      </div>
+      <div class="atabs">
+        <button class="atab on" onclick="aPanel('lost',this)">&#128308; Lost Items</button>
+        <button class="atab" onclick="aPanel('found',this)">&#128994; Found Items</button>
+        <button class="atab" onclick="aPanel('users',this)">&#128100; All Users</button>
+        <button class="atab" onclick="aPanel('creds',this)">&#128274; Credentials</button>
+      </div>
+
+      <div id="ap-lost" class="apanel on">
+        <div class="filter-row">
+          <input type="text" id="af-lost" placeholder="Filter by name, location, reporter..." oninput="loadAdminItems('lost')"/>
+          <select id="afc-lost" onchange="loadAdminItems('lost')"><option value="">All Categories</option><option>Electronics</option><option>Bags &amp; Wallets</option><option>Documents &amp; Cards</option><option>Clothing</option><option>Keys</option><option>Jewellery</option><option>Books &amp; Stationery</option><option>Other</option></select>
+        </div>
+        <div class="atable-wrap"><table class="atable">
+          <thead><tr><th>Item</th><th>Reported By</th><th>Email</th><th>Phone</th><th>Location</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="at-lost"></tbody>
+        </table></div>
+      </div>
+
+      <div id="ap-found" class="apanel">
+        <div class="filter-row">
+          <input type="text" id="af-found" placeholder="Filter by name, location, reporter..." oninput="loadAdminItems('found')"/>
+          <select id="afc-found" onchange="loadAdminItems('found')"><option value="">All Categories</option><option>Electronics</option><option>Bags &amp; Wallets</option><option>Documents &amp; Cards</option><option>Clothing</option><option>Keys</option><option>Jewellery</option><option>Books &amp; Stationery</option><option>Other</option></select>
+        </div>
+        <div class="atable-wrap"><table class="atable">
+          <thead><tr><th>Item</th><th>Reported By</th><th>Email</th><th>Phone</th><th>Found Location</th><th>Stored At</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="at-found"></tbody>
+        </table></div>
+      </div>
+
+      <div id="ap-users" class="apanel">
+        <div class="filter-row"><input type="text" id="af-users" placeholder="Filter by name or email..." oninput="loadAdminUsers()"/></div>
+        <div class="atable-wrap"><table class="atable">
+          <thead><tr><th>User</th><th>Email</th><th>Phone</th><th>Joined</th><th>Posts</th><th>Actions</th></tr></thead>
+          <tbody id="at-users"></tbody>
+        </table></div>
+      </div>
+
+      <div id="ap-creds" class="apanel">
+        <div class="cred-section">
+          <h3>&#128100; Change Admin Name</h3><p>Update your display name across the app</p>
+          <div class="frow"><label>New Name</label><input id="cred-n" type="text" placeholder="Enter new name"/></div>
+          <button class="btn-sub" onclick="changeName()">Update Name</button>
+          <div class="err" id="cn-err"></div><div class="suc" id="cn-suc"></div>
+        </div>
+        <div class="cred-section">
+          <h3>&#9993; Change Admin Email</h3><p>Update the email used to log in</p>
+          <div class="frow"><label>New Email</label><input id="cred-e" type="email" placeholder="New email address"/></div>
+          <div class="frow"><label>Current Password</label><input id="cred-ep" type="password" placeholder="Confirm with password"/></div>
+          <button class="btn-sub" onclick="changeEmail()">Update Email</button>
+          <div class="err" id="ce-err"></div><div class="suc" id="ce-suc"></div>
+        </div>
+        <div class="cred-section">
+          <h3>&#128274; Change Password</h3><p>Set a new password for the admin account</p>
+          <div class="frow"><label>Current Password</label><input id="cp-c" type="password" placeholder="Current password"/></div>
+          <div class="frow"><label>New Password</label><input id="cp-n" type="password" placeholder="New password (min 6)"/></div>
+          <div class="frow"><label>Confirm New Password</label><input id="cp-x" type="password" placeholder="Repeat new password"/></div>
+          <button class="btn-sub" onclick="changePass()">Update Password</button>
+          <div class="err" id="cp-err"></div><div class="suc" id="cp-suc"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── CONFIG ── Change this to your server URL when deployed
+const API = 'http://localhost:3000/api';
+
+let token = localStorage.getItem('rc_token') || '';
+let curUser = null;
+let searchTimer = null;
+
+// ── API HELPER ────────────────────────────────────────────────────────────
+async function api(method, path, body, isFormData) {
+  const opts = {
+    method,
+    headers: { 'Authorization': token ? 'Bearer ' + token : '' }
+  };
+  if (body && !isFormData) {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  } else if (isFormData) {
+    opts.body = body; // FormData — let browser set content-type
+  }
+  const res = await fetch(API + path, opts);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Request failed');
+  return data;
+}
+
+// ── AUTH ──────────────────────────────────────────────────────────────────
+function aTab(t) {
+  document.getElementById('tab-si').className = 'auth-tab' + (t === 'si' ? ' on' : '');
+  document.getElementById('tab-su').className = 'auth-tab' + (t === 'su' ? ' on' : '');
+  document.getElementById('f-si').style.display = t === 'si' ? 'block' : 'none';
+  document.getElementById('f-su').style.display = t === 'su' ? 'block' : 'none';
+}
+
+async function doSI() {
+  const email = gv('si-e'), pass = gv('si-p');
+  const err = document.getElementById('si-err'), btn = document.getElementById('btn-si');
+  err.textContent = '';
+  if (!email || !pass) { err.textContent = 'Please fill in all fields.'; return; }
+  btn.disabled = true; btn.textContent = 'Signing in...';
+  try {
+    const data = await api('POST', '/auth/signin', { email, password: pass });
+    token = data.token;
+    localStorage.setItem('rc_token', token);
+    loginUI(data.user);
+  } catch (e) {
+    err.textContent = e.message;
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+}
+
+async function doSU() {
+  const name = gv('su-n'), email = gv('su-e'), phone = gv('su-ph'), pass = gv('su-p');
+  const err = document.getElementById('su-err'), suc = document.getElementById('su-suc'), btn = document.getElementById('btn-su');
+  err.textContent = ''; suc.textContent = '';
+  if (!name || !email || !pass) { err.textContent = 'Name, email and password are required.'; return; }
+  if (pass.length < 6) { err.textContent = 'Password must be at least 6 characters.'; return; }
+  btn.disabled = true; btn.textContent = 'Creating account...';
+  try {
+    const data = await api('POST', '/auth/signup', { name, email, phone, password: pass });
+    token = data.token;
+    localStorage.setItem('rc_token', token);
+    suc.textContent = 'Account created! Signing you in...';
+    setTimeout(() => loginUI(data.user), 600);
+  } catch (e) {
+    err.textContent = e.message;
+    btn.disabled = false; btn.textContent = 'Create Account';
+  }
+}
+
+function loginUI(user) {
+  curUser = user;
+  const isAdmin = user.role === 'admin';
+  document.getElementById('nav-nm').textContent = user.name;
+  document.getElementById('nav-av').textContent = user.name[0].toUpperCase();
+  document.getElementById('nav-av').className = 'av' + (isAdmin ? ' adm' : '');
+  document.getElementById('h-name').textContent = user.name.split(' ')[0];
+  document.getElementById('nav-abadge').style.display = isAdmin ? 'inline' : 'none';
+  document.getElementById('nav-abtn').style.display = isAdmin ? 'inline' : 'none';
+  document.getElementById('home-admin-card').style.display = isAdmin ? 'block' : 'none';
+  document.getElementById('pg-auth').classList.remove('active');
+  document.getElementById('pg-app').classList.add('active');
+  sv('home');
+  loadStats();
+}
+
+function doOut() {
+  token = ''; curUser = null;
+  localStorage.removeItem('rc_token');
+  document.getElementById('pg-app').classList.remove('active');
+  document.getElementById('pg-auth').classList.add('active');
+  toast('Signed out', 's');
+}
+
+// Auto-login if token exists
+window.addEventListener('load', async () => {
+  if (!token) return;
+  try {
+    const data = await api('GET', '/auth/me');
+    loginUI(data.user);
+  } catch (e) {
+    token = ''; localStorage.removeItem('rc_token');
+  }
+});
+
+// ── VIEWS ─────────────────────────────────────────────────────────────────
+function sv(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+  document.getElementById('v-' + id).classList.add('on');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (id === 'sl') searchItems('lost');
+  if (id === 'sf') searchItems('found');
+  if (id === 'myposts') loadMyPosts();
+  if (id === 'chat') loadChat();
+  if (id === 'admin') { loadAdminStats(); loadAdminItems('lost'); }
+}
+
+// ── STATS ─────────────────────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const d = await api('GET', '/admin/stats');
+    document.getElementById('s-l').textContent = d.lost;
+    document.getElementById('s-f').textContent = d.found;
+    document.getElementById('s-r').textContent = d.resolved;
+  } catch (e) { /* non-critical */ }
+}
+
+async function loadAdminStats() {
+  try {
+    const d = await api('GET', '/admin/stats');
+    document.getElementById('a-sl').textContent = d.lost;
+    document.getElementById('a-sf').textContent = d.found;
+    document.getElementById('a-sr').textContent = d.resolved;
+    document.getElementById('a-su').textContent = d.users;
+  } catch (e) {}
+}
+
+// ── SUBMIT ITEM ───────────────────────────────────────────────────────────
+async function submitItem(type) {
+  const p = type === 'lost' ? 'rl' : 'rf';
+  const name = gv(p + '-n'), loc = gv(p + '-l');
+  const err = document.getElementById(p + '-err'), suc = document.getElementById(p + '-suc');
+  const btn = document.getElementById('btn-' + p);
+  err.textContent = ''; suc.textContent = '';
+  document.getElementById(p + '-match').style.display = 'none';
+  if (!name || !loc) { err.textContent = 'Item name and location are required.'; return; }
+
+  const fd = new FormData();
+  fd.append('type', type);
+  fd.append('name', name);
+  fd.append('category', document.getElementById(p + '-c').value);
+  fd.append('location', loc);
+  fd.append('date', gv(p + '-d'));
+  fd.append('description', gv(p + '-ds'));
+  fd.append('contact', gv(p + '-ct'));
+  if (type === 'found') fd.append('storedAt', gv('rf-st'));
+  const imgFile = document.getElementById(p + '-img').files[0];
+  if (imgFile) fd.append('image', imgFile);
+
+  btn.disabled = true; btn.textContent = 'Submitting...';
+  try {
+    const data = await api('POST', '/items', fd, true);
+    suc.textContent = (type === 'lost' ? 'Lost' : 'Found') + ' item reported successfully!';
+    if (data.matchesFound > 0) {
+      document.getElementById(p + '-match').style.display = 'block';
+      addNotif('Possible match found for your ' + type + ' item: ' + name);
+    }
+    // Clear form
+    [p+'-n', p+'-l', p+'-ds', p+'-ct'].forEach(id => { const e = document.getElementById(id); if(e) e.value = ''; });
+    document.getElementById(p + '-img').value = '';
+    if (type === 'found') document.getElementById('rf-st').value = '';
+    loadStats();
+    addNotif((type === 'lost' ? 'Lost' : 'Found') + ' item reported: ' + name);
+    toast((type === 'lost' ? 'Lost' : 'Found') + ' item reported!', 's');
+  } catch (e) {
+    err.textContent = e.message;
+  }
+  btn.disabled = false; btn.textContent = 'Submit Report';
+}
+
+// ── SEARCH ITEMS ──────────────────────────────────────────────────────────
+function debSearch(type) {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => searchItems(type), 350);
+}
+
+async function searchItems(type) {
+  const q   = gv(type === 'lost' ? 'sl-q' : 'sf-q');
+  const cat = document.getElementById(type === 'lost' ? 'sl-cat' : 'sf-cat').value;
+  const el  = document.getElementById(type + '-grid');
+  el.innerHTML = '<div class="loading">Loading...</div>';
+  try {
+    let path = '/items?type=' + type;
+    if (q) path += '&search=' + encodeURIComponent(q);
+    if (cat) path += '&category=' + encodeURIComponent(cat);
+    const data = await api('GET', path);
+    renderItems(type, data.items);
+  } catch (e) {
+    el.innerHTML = '<div class="empty"><div class="empty-i">&#9888;</div><p>Could not load items.</p></div>';
+  }
+}
+
+function renderItems(type, arr) {
+  const el = document.getElementById(type + '-grid');
+  if (!arr.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-i">' + (type === 'lost' ? '&#128269;' : '&#128230;') + '</div><p>No ' + type + ' items yet.</p></div>';
+    return;
+  }
+  el.innerHTML = arr.map(it => `
+    <div class="icard">
+      ${it.imageUrl ? `<img src="${esc(it.imageUrl)}" alt="item photo"/>` : ''}
+      <span class="badge ${it.type==='lost'?'bl':'bf'}">${it.type}</span>
+      ${it.resolved ? '<span class="badge br" style="margin-left:6px">resolved</span>' : ''}
+      <h3>${esc(it.name)}</h3>
+      <div class="imeta">&#128205; ${esc(it.location)}</div>
+      <div class="imeta">&#127991; ${esc(it.category)}</div>
+      ${it.date ? `<div class="imeta">&#128197; ${esc(it.date)}</div>` : ''}
+      ${it.storedAt ? `<div class="imeta">&#128451; ${esc(it.storedAt)}</div>` : ''}
+      ${it.description ? `<div class="idesc">${esc(it.description)}</div>` : ''}
+      <div class="ifooter">
+        <span class="iposter">&#128100; ${esc(it.reportedBy.name)}</span>
+        ${it.contact ? `<button class="btn-ct" onclick="window.open('tel:${esc(it.contact)}')">&#128222; Contact</button>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+// ── MY POSTS ──────────────────────────────────────────────────────────────
+async function loadMyPosts() {
+  const el = document.getElementById('mp-list');
+  el.innerHTML = '<div class="loading">Loading...</div>';
+  try {
+    const data = await api('GET', '/items/my');
+    if (!data.items.length) {
+      el.innerHTML = '<div class="empty"><div class="empty-i">&#128203;</div><p>No posts yet.</p></div>';
+      return;
+    }
+    el.innerHTML = data.items.map(it => `
+      <div class="mpc">
+        <div>
+          <span class="badge ${it.type==='lost'?'bl':'bf'}">${it.type}</span>
+          ${it.resolved ? '<span class="badge br" style="margin-left:6px">resolved</span>' : ''}
+        </div>
+        <div class="mpi">
+          <h3>${esc(it.name)}</h3>
+          <div style="font-size:13px;color:#64748b">&#128205; ${esc(it.location)} &nbsp;|&nbsp; &#127991; ${esc(it.category)}</div>
+          ${it.description ? `<div style="font-size:13px;color:#64748b;margin-top:4px">${esc(it.description)}</div>` : ''}
+          <div class="mpa">
+            ${!it.resolved ? `<button class="btn-res" onclick="resolveItem('${it._id}')">Mark Resolved</button>` : ''}
+            <button class="btn-del" onclick="deleteItem('${it._id}')">Delete</button>
+          </div>
+        </div>
+      </div>`).join('');
+  } catch (e) {
+    el.innerHTML = '<div class="empty"><p>Could not load posts.</p></div>';
+  }
+}
+
+async function deleteItem(id) {
+  if (!confirm('Delete this post?')) return;
+  try {
+    await api('DELETE', '/items/' + id);
+    loadMyPosts(); loadStats();
+    toast('Post deleted', 's');
+  } catch (e) { toast(e.message, 'e'); }
+}
+
+async function resolveItem(id) {
+  try {
+    await api('PATCH', '/items/' + id + '/resolve');
+    loadMyPosts(); loadStats();
+    toast('Marked as resolved ✅', 's');
+  } catch (e) { toast(e.message, 'e'); }
+}
+
+// ── CHAT ──────────────────────────────────────────────────────────────────
+async function loadChat() {
+  const el = document.getElementById('cmsgs');
+  el.innerHTML = '';
+  try {
+    const data = await api('GET', '/chat');
+    if (!data.chats.length) {
+      el.innerHTML = '<div class="msg them"><div class="mb">Hello! I\'m the Re-Claim admin. How can I help? &#128075;</div><div class="mm">Admin &middot; now</div></div>';
+      return;
+    }
+    data.chats.forEach(c => {
+      const isMine = c.from === curUser.id || c.from === curUser._id;
+      el.insertAdjacentHTML('beforeend',
+        `<div class="msg ${isMine?'mine':'them'}"><div class="mb">${esc(c.message)}</div><div class="mm">${esc(c.fromName)} &middot; ${fmtTime(c.createdAt)}</div></div>`);
+    });
+    el.scrollTop = el.scrollHeight;
+  } catch (e) {
+    el.innerHTML = '<div class="msg them"><div class="mb">Hello! How can I help? &#128075;</div></div>';
+  }
+}
+
+async function sndMsg() {
+  const inp = document.getElementById('cin'), txt = inp.value.trim();
+  if (!txt) return;
+  inp.value = '';
+  const c = document.getElementById('cmsgs');
+  const t = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  c.insertAdjacentHTML('beforeend', `<div class="msg mine"><div class="mb">${esc(txt)}</div><div class="mm">You &middot; ${t}</div></div>`);
+  c.scrollTop = c.scrollHeight;
+  try {
+    await api('POST', '/chat', { message: txt });
+  } catch (e) { /* non-critical */ }
+}
+
+// ── ADMIN PANEL ───────────────────────────────────────────────────────────
+function aPanel(p, btn) {
+  document.querySelectorAll('.atab').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.apanel').forEach(x => x.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('ap-' + p).classList.add('on');
+  if (p === 'lost' || p === 'found') loadAdminItems(p);
+  if (p === 'users') loadAdminUsers();
+}
+
+async function loadAdminItems(type) {
+  const q   = gv('af-' + type);
+  const cat = document.getElementById('afc-' + type).value;
+  const tb  = document.getElementById('at-' + type);
+  tb.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#94a3b8">Loading...</td></tr>';
+  try {
+    let path = '/items/admin/all?type=' + type;
+    if (q) path += '&search=' + encodeURIComponent(q);
+    if (cat) path += '&category=' + encodeURIComponent(cat);
+    const data = await api('GET', path);
+    if (!data.items.length) {
+      tb.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#94a3b8">No records found</td></tr>';
+      return;
+    }
+    tb.innerHTML = data.items.map(it => {
+      const st = it.resolved
+        ? '<span class="badge br">resolved</span>'
+        : `<span class="badge ${it.type==='lost'?'bl':'bf'}">active</span>`;
+      const ac = `<button class="btn-adet" onclick='showDetail(${JSON.stringify(it)})'>Details</button>`
+        + (!it.resolved ? `<button class="btn-ares" onclick="adminRes('${it._id}','${it.type}')">Resolve</button>` : '')
+        + `<button class="btn-adel" onclick="adminDel('${it._id}','${it.type}')">Delete</button>`;
+      return `<tr>
+        <td><div class="td-name">${esc(it.name)}</div><div class="td-meta">${esc(it.category)}</div></td>
+        <td><div class="user-row"><div class="user-av">${esc((it.reportedBy.name||'?')[0].toUpperCase())}</div><div class="td-name">${esc(it.reportedBy.name)}</div></div></td>
+        <td>${esc(it.reportedBy.email)}</td>
+        <td>${esc(it.reportedBy.phone||it.contact||'—')}</td>
+        <td>${esc(it.location)}</td>
+        <td>${type==='found'?esc(it.storedAt||'—'):esc(it.date||'—')}</td>
+        <td>${st}</td>
+        <td style="white-space:nowrap">${ac}</td>
+      </tr>`;
+    }).join('');
+  } catch (e) {
+    tb.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#ef4444">' + e.message + '</td></tr>';
+  }
+}
+
+async function loadAdminUsers() {
+  const q  = gv('af-users');
+  const tb = document.getElementById('at-users');
+  tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8">Loading...</td></tr>';
+  try {
+    let path = '/admin/users';
+    if (q) path += '?search=' + encodeURIComponent(q);
+    const data = await api('GET', path);
+    if (!data.users.length) {
+      tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8">No users found</td></tr>';
+      return;
+    }
+    tb.innerHTML = data.users.map(u => `
+      <tr>
+        <td><div class="user-row"><div class="user-av">${esc(u.name[0].toUpperCase())}</div><div class="td-name">${esc(u.name)}</div></div></td>
+        <td>${esc(u.email)}</td>
+        <td>${esc(u.phone||'—')}</td>
+        <td>${fmtDate(u.createdAt)}</td>
+        <td>${u.postCount} post${u.postCount!==1?'s':''}</td>
+        <td><button class="btn-adel" onclick="adminDelUser('${u._id}')">Delete</button></td>
+      </tr>`).join('');
+  } catch (e) {
+    tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#ef4444">' + e.message + '</td></tr>';
+  }
+}
+
+async function adminRes(id, type) {
+  try {
+    await api('PATCH', '/items/' + id + '/resolve');
+    loadAdminItems(type); loadAdminStats(); loadStats();
+    toast('Marked as resolved', 's');
+  } catch (e) { toast(e.message, 'e'); }
+}
+
+async function adminDel(id, type) {
+  if (!confirm('Delete this report?')) return;
+  try {
+    await api('DELETE', '/items/' + id);
+    loadAdminItems(type); loadAdminStats(); loadStats();
+    toast('Report deleted', 's');
+  } catch (e) { toast(e.message, 'e'); }
+}
+
+async function adminDelUser(id) {
+  if (!confirm('Delete this user and ALL their posts?')) return;
+  try {
+    await api('DELETE', '/admin/users/' + id);
+    loadAdminUsers(); loadAdminStats();
+    toast('User deleted', 's');
+  } catch (e) { toast(e.message, 'e'); }
+}
+
+function showDetail(it) {
+  document.getElementById('m-title').textContent = it.name;
+  document.getElementById('m-sub').textContent = (it.type==='lost'?'Lost':'Found') + ' item · ' + it.category;
+  const rows = [
+    ['Type', it.type==='lost'?'&#128308; Lost':'&#128994; Found'],
+    ['Item', esc(it.name)],
+    ['Category', esc(it.category)],
+    ['Location', esc(it.location)],
+    ['Date', esc(it.date||'Not specified')],
+    ['Description', esc(it.description||'—')],
+    ['Status', it.resolved?'&#9989; Resolved':'&#128308; Active'],
+  ];
+  if (it.storedAt) rows.push(['Stored At', esc(it.storedAt)]);
+  document.getElementById('m-body').innerHTML = rows.map(r =>
+    `<div class="detail-row"><div class="dl">${r[0]}</div><div class="dv">${r[1]}</div></div>`).join('');
+  document.getElementById('m-contact').style.display = 'block';
+  document.getElementById('m-cbody').innerHTML =
+    `<div class="cdet">&#128100; <strong>${esc(it.reportedBy.name)}</strong></div>
+     <div class="cdet">&#9993; ${esc(it.reportedBy.email)}</div>
+     <div class="cdet">&#128222; ${esc(it.reportedBy.phone||it.contact||'Not provided')}</div>`;
+  document.getElementById('detail-modal').classList.add('on');
+}
+
+function closeModal() { document.getElementById('detail-modal').classList.remove('on'); }
+
+// ── CREDENTIALS ───────────────────────────────────────────────────────────
+async function changeName() {
+  const n = gv('cred-n');
+  const err = document.getElementById('cn-err'), suc = document.getElementById('cn-suc');
+  err.textContent = ''; suc.textContent = '';
+  if (!n) { err.textContent = 'Enter a new name.'; return; }
+  try {
+    const d = await api('PATCH', '/auth/change-name', { name: n });
+    curUser.name = d.name;
+    document.getElementById('nav-nm').textContent = d.name;
+    document.getElementById('nav-av').textContent = d.name[0].toUpperCase();
+    document.getElementById('h-name').textContent = d.name.split(' ')[0];
+    document.getElementById('cred-n').value = '';
+    suc.textContent = 'Name updated!';
+    toast('Name updated', 's');
+  } catch (e) { err.textContent = e.message; }
+}
+
+async function changeEmail() {
+  const email = gv('cred-e'), pass = gv('cred-ep');
+  const err = document.getElementById('ce-err'), suc = document.getElementById('ce-suc');
+  err.textContent = ''; suc.textContent = '';
+  if (!email || !pass) { err.textContent = 'Fill in all fields.'; return; }
+  try {
+    const d = await api('PATCH', '/auth/change-email', { email, currentPassword: pass });
+    document.getElementById('cred-e').value = '';
+    document.getElementById('cred-ep').value = '';
+    suc.textContent = 'Email updated to: ' + d.email;
+    toast('Email updated', 's');
+  } catch (e) { err.textContent = e.message; }
+}
+
+async function changePass() {
+  const cur = gv('cp-c'), nw = gv('cp-n'), con = gv('cp-x');
+  const err = document.getElementById('cp-err'), suc = document.getElementById('cp-suc');
+  err.textContent = ''; suc.textContent = '';
+  if (!cur || !nw || !con) { err.textContent = 'Fill in all fields.'; return; }
+  if (nw !== con) { err.textContent = 'New passwords do not match.'; return; }
+  try {
+    await api('PATCH', '/auth/change-password', { currentPassword: cur, newPassword: nw });
+    ['cp-c','cp-n','cp-x'].forEach(id => document.getElementById(id).value = '');
+    suc.textContent = 'Password updated successfully!';
+    toast('Password updated', 's');
+  } catch (e) { err.textContent = e.message; }
+}
+
+// ── NOTIFICATIONS ──────────────────────────────────────────────────────────
+function addNotif(msg) {
+  const el = document.getElementById('notif-list');
+  const t = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  el.insertAdjacentHTML('afterbegin',
+    `<div class="ncard"><div class="ndot"></div><div><h4>New activity</h4><p>${esc(msg)}</p><div class="ntime">${t}</div></div></div>`);
+}
+
+// ── UTILS ──────────────────────────────────────────────────────────────────
+function gv(id) { const e = document.getElementById(id); return e ? e.value.trim() : ''; }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function toast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type === 's' ? 'ts' : 'te');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+function fmtTime(d) {
+  return d ? new Date(d).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'now';
+}
+function fmtDate(d) {
+  return d ? new Date(d).toLocaleDateString() : '—';
+}
+</script>
+</body>
+</html>
